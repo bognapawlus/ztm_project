@@ -3,30 +3,7 @@ import time
 import requests
 import json
 import os
-import argparse
 import sys
-
-parser = argparse.ArgumentParser()
-parser.add_argument("-s", "--schedule", action="store_true", help="download schedule, busstop and lines")
-parser.add_argument("-c", "--current_buses", action="store_true", help="download current buses' coordinates")
-parser.add_argument("end_time", help="file to be read")
-args = parser.parse_args()
-
-#1. time conversion:
-# -- current_time -> time, when we start downoloading
-# -- end_time -> time when we stop downolading
-# -- number_of_items -> how many times downloading will be reapeted
-now1 = datetime.now()
-current_time = now1.strftime("%Y/%m/%d, %H:%M")
-#wczytane = "23:05"
-wczytane = args.end_time
-end_time = datetime.now().strftime("%Y/%m/%d,") + " " + wczytane
-
-d1 = datetime.strptime(current_time, "%Y/%m/%d, %H:%M")
-d2 = datetime.strptime(end_time, "%Y/%m/%d, %H:%M")
-x = d2 - d1
-number_of_times = int(x.seconds/60)
-number_of_times
 
 
 #2. function to creating a directory with current date
@@ -175,8 +152,6 @@ busstopId={s1}&busstopNr={s2}&line={s3}\
                 with open(path_f, "w") as file:
                     json.dump(json_object2, file)
 
-            #x = input()
-
             #zapis do plików
             file_name = f"{s1}_{s2}.json"
             path_f = os.path.join(os.getcwd(), dict_name, "lines", file_name)
@@ -186,25 +161,21 @@ busstopId={s1}&busstopNr={s2}&line={s3}\
         i += 1
         print(f"{i}.Busstop: {s1}, nr: {s2} -- download  completed.\n")
 
-##.....
-
     
 
 #4. function to download all data which we wanted            
-def download_data():
-    if args.schedule:
+def download_data(number_of_times, schedule, current_buses):
+    if schedule:
         print("Downloading schedule")
         dict_name = download_busstop_coordinates()
         download_lines_and_schedules(dict_name)
     
-    if args.current_buses:
+    if current_buses:
         data_dictionary = ''
-        for i in range(number_of_times):
+        for i in range(int(number_of_times)):
             if i == 0:
                 data_dictionary = create_a_dict()
             download_single_data(i, data_dictionary)
             time.sleep(60)
 
-
-download_data()
         

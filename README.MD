@@ -28,8 +28,18 @@ for current driving buses
 ### Instruction of using
 
 **functions:**
+* `download_data(number_of_times, schedule, current_buses)` - it downloads data from website. If schedule = True, function 
+starts with downloading type2 file. If current buses = True, then type1 file will be downloaded number_of_times times (about every 60 seconds). 
 
-
+We can also download data with using dm.py file
+```sh
+ $ python3 dm.py 62
+```
+downloads current buses coordination 62 times and
+```sh
+ $ python3 dm.py 62 -s
+```
+downloads schedule first, and then it downloads current buses coordination 62 times.
 
 ## Analysis module
 The goal of this module is to create 3 objects:
