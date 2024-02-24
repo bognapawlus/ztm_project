@@ -14,33 +14,22 @@ class Schedule:
         self.directory_schedule = directory_name
         file_name = "busstops.json"
         path = os.path.join(os.getcwd(), directory_name, file_name)
-        f = open(path)
-        json_data = json.load(f)
+        
+        with open(path) as f:
+            json_data = json.load(f)
+
         bus_stops = json_data["result"]
 
         for i in range(len(bus_stops)):
-            dict_0 = {
-                value[0]["key"]: value[0]["value"]
-                for (key, value) in bus_stops[i].items()
-            }
-            dict_1 = {
-                value[1]["key"]: value[1]["value"]
-                for (key, value) in bus_stops[i].items()
-            }
-            dict_2 = {
-                value[2]["key"]: value[2]["value"]
-                for (key, value) in bus_stops[i].items()
-            }
-            dict_4 = {
-                value[4]["key"]: value[4]["value"]
-                for (key, value) in bus_stops[i].items()
-            }
-            dict_5 = {
-                value[5]["key"]: value[5]["value"]
-                for (key, value) in bus_stops[i].items()
-            }
-            # print(type(dict_0))
-            bus_stops[i] = dict_0 | dict_1 | dict_2 | dict_4 | dict_5
+        
+            dicts = ['', '', '', '', '', '']
+            for index in 0, 1, 2, 4, 5:
+                dicts[index] = {
+                            value[index]["key"]: value[index]["value"]
+                            for (key, value) in bus_stops[i].items()
+                        }
+
+            bus_stops[i] = dicts[0] | dicts[1] | dicts[2] | dicts[4] | dicts[5]
 
         self.busstops_data = pd.DataFrame.from_dict(bus_stops)
 
@@ -51,9 +40,9 @@ class Schedule:
     def get_lines_from_busstop(self, group_id, busstop_id):
         lines_file = f"{group_id}_{busstop_id}.json"
         path = os.path.join(os.getcwd(), self.directory_schedule, "lines", lines_file)
-        f = open(path)
-        json_data_onestop = json.load(f)
-        json_data_onestop
+        
+        with open(path) as f:
+            json_data_onestop = json.load(f)
 
         list_of_lines = json_data_onestop["result"]
         if list_of_lines == []:
@@ -92,9 +81,10 @@ class Schedule:
         path = os.path.join(
             os.getcwd(), self.directory_schedule, "schedule", schedule_file
         )
-        f = open(path)
-        json_data_oneline = json.load(f)
-        json_data_oneline
+        
+        with open(path) as f:
+            json_data_oneline = json.load(f)
+
 
         list_a = json_data_oneline["result"]
 
@@ -109,7 +99,7 @@ class Schedule:
                     for (key, value) in list_a[i].items()
                 }  # brigade
                 dict1 = {
-                    value[5]["key"]: "2024-02-20 " + value[5]["value"]
+                    value[5]["key"]: self.directory_schedule[0:11] + value[5]["value"]
                     for (key, value) in list_a[i].items()
                 }  # time
                 list_a[i] = dict0 | dict1

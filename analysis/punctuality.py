@@ -33,7 +33,7 @@ class Punctuality:
         print(f"Total items to count: {len(self.all_busstop_data)}. How many counted:")
 
         i = 0
-        ##wyswietl rozkład dla każdej linii
+        ##opening schedule for each busstop and line
         for busstop_data in self.all_busstop_data:
             group_id = busstop_data[0]
             busstop_id = busstop_data[1]
@@ -64,7 +64,7 @@ class Punctuality:
 
             if how_many_counted_info:
                 if i % 10 == 0:
-                    print(i, end=", ")
+                    print(f"completed:{i}", end=", ")
 
         self.all_busstop_data = pd.DataFrame(
             self.all_busstop_data, columns=self.all_busstop_data_columns
@@ -77,7 +77,7 @@ class Punctuality:
     def save_late_buses(self, file_name):
         self.all_busstop_data.to_csv(file_name)
 
-    # 2. Analysis of delay:
+    # 2. MAIN FUNCTION: Analysis of delay:
     def analize_delays(
         self, min_num_buses, min_delay_percent, biggest_delays_table, display_map
     ):

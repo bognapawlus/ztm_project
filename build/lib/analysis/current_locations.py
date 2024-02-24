@@ -20,8 +20,8 @@ class Current_locations:
         #create pandas data_frame for first file
         file_name = self.list_of_files[0]
         path = os.path.join(os.getcwd(), directory_name, file_name)
-        f = open(path)
-        json_data = json.load(f)
+        with open(path) as f:
+            json_data = json.load(f)        
         self.data = pd.DataFrame.from_dict(json_data["result"])
         
         #create main pandas dataframe
@@ -29,7 +29,6 @@ class Current_locations:
             self.__concatenate_data(i)
         self.data['Time'] = pd.to_datetime(self.data['Time'])
 
-        
         #create list with all vehicle_numbers
         self.all_vehicle_numbers = self.data["VehicleNumber"].to_numpy()
         self.all_vehicle_numbers = np.unique(self.all_vehicle_numbers)
@@ -41,8 +40,8 @@ class Current_locations:
     def __concatenate_data(self, i):
         file_name = self.list_of_files[i]
         path = os.path.join(os.getcwd(), self.dict_name, file_name)
-        f = open(path)
-        json_data = json.load(f)
+        with open(path) as f:
+            json_data = json.load(f)         
         data_i = pd.DataFrame.from_dict(json_data["result"])
         self.data = pd.concat([self.data, data_i], axis=0)
         
@@ -72,7 +71,7 @@ class Current_locations:
         radians = degrees * np.pi / 180
         return radians
 
-    #https://pl.martech.zone/calculate-great-circle-distance/
+    #formula from https://pl.martech.zone/calculate-great-circle-distance/
     def __getDistanceBetweenPointsNew(self, latitude1, longitude1, latitude2, longitude2):
         
         if latitude1 == latitude2 and longitude1 == longitude2:
@@ -119,7 +118,7 @@ class Current_locations:
         bus = self.data[self.data["VehicleNumber"] == bus_id]
         bus = bus.sort_values("Time")
         bus_good_time = bus[bus["Time"] > min_time]
-        ##ans[np.bus_table, n_rows, speed_list, max_speed]
+        ##ans[np.bus_table, n_rows, speed_list, max_speed, coordinates]
         ans = ['', '', '', '', '']
         ans[0] = bus_good_time.to_numpy() # table with coordinates for one bus
         ans[1] = len(bus_good_time.axes[0]) # computing number of rows
@@ -128,7 +127,7 @@ class Current_locations:
         ans[4] = [] # coordinates for exceeded speed
         
         if ans[1] <= 1:
-            0
+            pass
             #print(f"Not enough data. Can't anylise bus's {bus_id} locations.")
         else:
             ans[2] = self.__get_speed_list(ans[0], ans[1], speed_limit)[0]
@@ -150,6 +149,7 @@ class Current_locations:
 
         display(mapa)
     
+    #ONE OF MAIN FUNCTIONS: it counts speeding and displays map with speeding location
     def analysis_of_all_buses_speed(self, speed_limit, display_map):
         how_many_buses_exceeded_the_speed = 0
         self.places_with_exceeded_speed = pd.DataFrame(columns=['Lat', 'Lon'])
@@ -171,10 +171,12 @@ class Current_locations:
         
         return [how_many_buses_exceeded_the_speed, self.places_with_exceeded_speed]
     
-    def create_grouped_places_with_exceeded_speed(self):
+    #function for table with speedings locations - 
+    #it puts locations into one group when a location is near to the other one in the group
+    def __create_grouped_places_with_exceeded_speed(self):
         df_np = self.places_with_exceeded_speed.to_numpy()
         num_buses = len(df_np)
-        distance_array = np.zeros((num_buses, num_buses))
+        distance_array = np.zeros((num_buses, num_buses)) 
 
         u = unionfind(num_buses)
 
@@ -183,12 +185,12 @@ class Current_locations:
                 #latitude1, longitude1, latitude2, longitude2
                 if i != j:
                     distance_array[i][j] = self.__getDistanceBetweenPointsNew(df_np[i][0], df_np[i][1], df_np[j][0], df_np[j][1])
-                    if distance_array[i][j] <= 1:
+                    if distance_array[i][j] <= 1: #distance in kilometers
                         u.unite(i, j)
 
-        self.dist_array = distance_array
+        self.dist_array = distance_array 
         self.group_places = u.groups()   
-        #return [self.dist_array, self.group_places]
+
     
     ##sort list with locations to draw a line 
     def __sorted_list(self, list_of_locations):
@@ -202,8 +204,9 @@ class Current_locations:
 
         return list_cp
     
+    
     def get_locations_with_lots_overspeeds(self):
-        self.create_grouped_places_with_exceeded_speed()
+        self.__create_grouped_places_with_exceeded_speed()
         df_np = self.places_with_exceeded_speed.to_numpy()
         lots_of_overspeeds = [gr for gr in self.group_places if len(gr) > 2]
         print(f"There were {len(lots_of_overspeeds)} areas where at least 3 buses exceded the speed limit.")
@@ -240,6 +243,7 @@ class Current_locations:
     def __add_coords_to_speed_list(self, new_coordinates):
         self.places_with_exceeded_speed = pd.concat([self.places_with_exceeded_speed, 
                                                      pd.DataFrame(new_coordinates).rename(columns={0: "Lat", 1: "Lon"})], axis=0)
+     
         
     ##6. Functions for getting nearest buses
     def __time_dist(self, time1, time2):
