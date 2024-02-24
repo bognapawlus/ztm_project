@@ -7,6 +7,7 @@ from datetime import datetime
 import geopy
 from unionfind import unionfind
 
+
 ##CLASS WITH SCHEDULE:
 class Schedule:
 
@@ -14,20 +15,20 @@ class Schedule:
         self.directory_schedule = directory_name
         file_name = "busstops.json"
         path = os.path.join(os.getcwd(), directory_name, file_name)
-        
+
         with open(path) as f:
             json_data = json.load(f)
 
         bus_stops = json_data["result"]
 
         for i in range(len(bus_stops)):
-        
-            dicts = ['', '', '', '', '', '']
+
+            dicts = ["", "", "", "", "", ""]
             for index in 0, 1, 2, 4, 5:
                 dicts[index] = {
-                            value[index]["key"]: value[index]["value"]
-                            for (key, value) in bus_stops[i].items()
-                        }
+                    value[index]["key"]: value[index]["value"]
+                    for (key, value) in bus_stops[i].items()
+                }
 
             bus_stops[i] = dicts[0] | dicts[1] | dicts[2] | dicts[4] | dicts[5]
 
@@ -40,7 +41,7 @@ class Schedule:
     def get_lines_from_busstop(self, group_id, busstop_id):
         lines_file = f"{group_id}_{busstop_id}.json"
         path = os.path.join(os.getcwd(), self.directory_schedule, "lines", lines_file)
-        
+
         with open(path) as f:
             json_data_onestop = json.load(f)
 
@@ -81,10 +82,9 @@ class Schedule:
         path = os.path.join(
             os.getcwd(), self.directory_schedule, "schedule", schedule_file
         )
-        
+
         with open(path) as f:
             json_data_oneline = json.load(f)
-
 
         list_a = json_data_oneline["result"]
 
@@ -117,6 +117,6 @@ class Schedule:
 
             return pd_table
 
+
 def get_object_with_schedule(directory_name):
     return Schedule(directory_name)
-

@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='ztm_package',
-    version='4.0.0',    
+    version='4.0.1',    
     description='ZTM analysis',
     url='https://github.com/bognapawlus/ztm_project',
     author='Bogna Pawlus',
