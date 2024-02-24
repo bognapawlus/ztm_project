@@ -17,6 +17,8 @@ class Punctuality:
         self.schedule = analysis.analysis_module.get_schedule_object(schedule_dict)
         self.start_time = self.current_data.get_start_time_of_downloading()
         self.end_time = self.current_data.get_end_time_of_downloading()
+        self.locations_folder = locations_dict
+        self.schedule_folder = schedule_dict
 
         # dataFrame with busstops:
         self.all_busstop_data = self.schedule.get_busstops_data().copy()
@@ -26,6 +28,12 @@ class Punctuality:
 
     def get_all_busstops(self):
         return self.all_busstop_data
+        
+    def get_locations_dir(self):
+        return self.locations_folder    
+
+    def get_schedule_dir(self):
+        return self.schedule_folder  
 
     ##1. Counting late buses:
     def count_late_buses(self, how_many_counted_info):
@@ -109,8 +117,11 @@ class Punctuality:
             self.delays_map(
                 bus_table[["szer_geo", "dlug_geo", "percent"]], min_delay_percent
             )
-
+        self.delay_table = bus_table
         #return bus_table
+
+    def get_delay_table(self):
+        return self.delay_table    
 
     def get_point_color(self, val):
         if val < 0.25:
@@ -147,6 +158,30 @@ class Punctuality:
                 ).add_to(mapa)
 
         display(mapa)
+        
+    #3. Analysis of busstops with less delay rate for our object than for other object
+    def get_better_busstops(self, punctuality_object2):
+        tab1 = self.get_delay_table()
+        tab2 = punctuality_object2.get_delay_table()
+
+        df = pd.merge(tab1, tab2[["percent"]], left_index=True, right_index=True)
+        df = df.loc[df["percent_x"] < df["percent_y"]]
+
+        print(f"For \"{self.get_locations_dir()}\" there are {len(df)} busstops with better delay rate")
+        print(f"than for \"{punctuality_object2.get_locations_dir()}\"")
+
+        new_data = df.copy()
+        new_data["diff"] = new_data["percent_y"] - new_data["percent_x"]
+        new_data = new_data.sort_values(by=['diff'], ascending=False)
+
+        print("\nTable with the best difference busstops:")
+        display(new_data[["slupek", "nazwa_zespolu", "diff"]].head(7))
+
+        print("\nThe map shows busstops with smaller number of delays for our object")
+        print("green point - small difference in delay rate")
+        print("red point - big difference")
+        self.delays_map(new_data[["szer_geo", "dlug_geo", "diff"]], 0)
+        
 
 def create_punctuality_object(locations_dict, schedule_dict):
     return Punctuality(locations_dict, schedule_dict)

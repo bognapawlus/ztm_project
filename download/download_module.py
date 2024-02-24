@@ -24,12 +24,12 @@ def create_info_dict():
     if not os.path.exists(dict_name):
         os.mkdir(dict_name)
         
-        #zrób folder na  linie:
+        #create folder for lines:
         path1 = os.path.join(os.getcwd(), dict_name, "lines")
         if not os.path.exists(path1):
             os.mkdir(path1)
 
-        #zrób folder na rozkład:
+        #create folder for schedule:
         path1 = os.path.join(os.getcwd(), dict_name, "schedule")
         if not os.path.exists(path1):
             os.mkdir(path1)
@@ -39,7 +39,6 @@ def create_info_dict():
         print("error, we have schedule downloaded")
         return -1
         
-#data_dictionary = create_a_dict()
 
 #3. function to download the single data with buses positions
 def download_single_data(nr, dir_name):
@@ -92,7 +91,6 @@ def download_busstop_coordinates():
                 json_object = json.loads(ans)   
             else:
                 break
-                ##TODO: how to end whole program
         
         path_f = os.path.join(os.getcwd(), schedule_dictionary_name, "busstops.json")
 
@@ -103,7 +101,7 @@ def download_busstop_coordinates():
         
 
 ###....
-def download_lines_and_schedules(dict_name):
+def download_lines_and_schedules(dict_name, start_num):
 
     path_f = os.path.join(os.getcwd(), dict_name, "busstops.json")
     with open(path_f) as file:
@@ -120,22 +118,17 @@ def download_lines_and_schedules(dict_name):
         s2 = el["values"][1]["value"]
         s3 = ''
         
-        if i >= 4695:
+        if i >= start_num:
             lines_link = f"https://api.um.warszawa.pl/api/action/dbtimetable_get?\
 id=88cd555f-6f31-43ca-9de4-66c479ad5942&\
 busstopId={s1}&busstopNr={s2}\
 &apikey=a0f68861-c45e-421e-8c4a-922f188a01a3"
-            print(lines_link)
             response = requests.post(lines_link)
             ans = response.text
             json_object = json.loads(ans) #tu mam dodane linie
-            print(json_object)
 
-            #print(json_object["result"])
             for el2 in json_object["result"]:
-                print(el2)
-                #print(el2["values"][0]["value"])
-                print(f"Trying {s1} {s2} {s3}")
+
                 s3 = el2["values"][0]["value"]
            
                 file_name = f"schedule_{s1}_{s2}_{s3}"
@@ -152,7 +145,7 @@ busstopId={s1}&busstopNr={s2}&line={s3}\
                 with open(path_f, "w") as file:
                     json.dump(json_object2, file)
 
-            #zapis do plików
+            #save to file
             file_name = f"{s1}_{s2}.json"
             path_f = os.path.join(os.getcwd(), dict_name, "lines", file_name)
             with open(path_f, "w") as file:
@@ -168,7 +161,7 @@ def download_data(number_of_times, schedule, current_buses):
     if schedule:
         print("Downloading schedule")
         dict_name = download_busstop_coordinates()
-        download_lines_and_schedules(dict_name)
+        download_lines_and_schedules(dict_name, 0)
     
     if current_buses:
         data_dictionary = ''
